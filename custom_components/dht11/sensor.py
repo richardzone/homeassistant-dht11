@@ -4,6 +4,7 @@ Home Assistant Integration for DHT11 temperature and humidity sensor.
 import logging
 import voluptuous as vol
 import adafruit_dht
+import board
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import (
     CONF_NAME,
@@ -14,13 +15,10 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import Entity
 
-CONF_GPIO_PIN = "gpio_pin"
-
 DEFAULT_NAME = "DHT11 Sensor"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
-        vol.Required(CONF_GPIO_PIN): cv.positive_int,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_TEMPERATURE_UNIT, default=TEMP_CELSIUS): vol.Any(
             TEMP_CELSIUS, "F"
@@ -33,26 +31,27 @@ _LOGGER = logging.getLogger(__name__)
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the DHT11 sensor."""
-    gpio_pin = config[CONF_GPIO_PIN]
     name = config[CONF_NAME]
     temperature_unit = config[CONF_TEMPERATURE_UNIT]
 
-    sensor = DHT11Sensor(gpio_pin, name, temperature_unit)
+    # Detect GPIO pin connected to DHT11 sensor
+    dht_device = adafruit_dht.DHT11(board.GENERAL_PURPOSE)
+
+    sensor = DHT11Sensor(dht_device, name, temperature_unit)
     add_entities([sensor])
 
 
 class DHT11Sensor(Entity):
     """Representation of a DHT11 sensor."""
 
-    def __init__(self, gpio_pin, name, temperature_unit):
+    def __init__(self, dht_device, name, temperature_unit):
         """Initialize the sensor."""
-        self._gpio_pin = gpio_pin
         self._name = name
         self._temperature_unit = temperature_unit
         self._state = None
         self._humidity = None
         self._temperature = None
-        self._dht_device = adafruit_dht.DHT11(gpio_pin)
+        self._dht_device = dht_device
 
     @property
     def name(self):
