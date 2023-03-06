@@ -1,0 +1,5 @@
+{
+  "name": "DHT11",
+  "homeassistant": "2022.4.0",
+  "render_readme": true
+}
