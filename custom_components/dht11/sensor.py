@@ -87,7 +87,7 @@ class DHT11Sensor(SensorEntity):
             temperature, humidity = result
             self._state = temperature
             self._unit_of_measurement = (
-                TEMP_FAHRENHEIT if self.hass.config.units.is_unit("imperial") else TEMP_CELSIUS
+                TEMP_FAHRENHEIT if self.hass.config.units.name == "imperial" else TEMP_CELSIUS
             )
         else:
             self._state = None
