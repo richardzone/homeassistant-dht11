@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required("pin"): cv.positive_int,
-        vol.Optional(CONF_NAME): cv.string,
+        vol.Optional(CONF_NAME, default="DHT11Sensor"): cv.string,
         vol.Optional(
             CONF_TEMPERATURE_UNIT, default=TEMP_CELSIUS
         ): vol.In([TEMP_CELSIUS, TEMP_FAHRENHEIT]),
@@ -52,7 +52,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             temperature = temperature * 1.8 + 32
         return temperature, humidity
 
-    add_entities([DHT11Sensor(name, update_dht11)], True)
+    add_entities([DHT11Sensor(name, update_dht11)])
 
 
 class DHT11Sensor(SensorEntity):
