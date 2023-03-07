@@ -47,8 +47,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             _LOGGER.warning(
                 "Failed to read data from DHT11 sensor on pin %s", pin
             )
-            return
-        if temperature_unit == TEMP_FAHRENHEIT:
+        if temperature_unit == TEMP_FAHRENHEIT and temperature is not None:
             temperature = temperature * 1.8 + 32
         return temperature, humidity
 
@@ -62,7 +61,8 @@ class DHT11Sensor(SensorEntity):
         """Initialize the sensor."""
         self._name = name
         self._update_method = update_method
-        self._state = None
+        self._temperature = None
+        self._humidity = None
         self._unit_of_measurement = None
 
     @property
@@ -73,22 +73,24 @@ class DHT11Sensor(SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._state
+        return self._temperature
 
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement of this entity."""
         return self._unit_of_measurement
 
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes."""
+        attrs = {}
+        attrs["humidity"] = self._humidity
+        return attrs
+
     def update(self):
         """Update the sensor."""
         result = self._update_method()
-        if result is not None:
-            temperature, humidity = result
-            self._state = temperature
-            self._unit_of_measurement = (
-                TEMP_FAHRENHEIT if self.hass.config.units.name == "imperial" else TEMP_CELSIUS
-            )
-        else:
-            self._state = None
-            self._unit_of_measurement = None
+        self._temperature, self._humidity = result
+        self._unit_of_measurement = (
+            TEMP_FAHRENHEIT if self.hass.config.units.name == "imperial" else TEMP_CELSIUS
+        )
